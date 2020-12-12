@@ -56,6 +56,7 @@ nyt_nationwide["Case Rate of Change"]= nyt_nationwide["Total Cases"].diff()
 
 #create a merged dataframe of tsa data and nationwide nyt data
 combined_total_data = pd.merge(numbered_tsa,nyt_nationwide, how="left",on="Date")
+combined_total_data = combined_total_data.loc[:,["Total Traveler Throughput 2020","Total Cases"]]
 #prepare nyt case data to be compared at different time points against travel numbers to explore if the relationship between the two has lag
 for i in [-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]:
     combined_total_data[i]=combined_total_data["Total Cases"].shift(i)
