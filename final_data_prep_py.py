@@ -13,6 +13,9 @@ tsa["Total Traveler Throughput 2020"] = tsa["Total Traveler Throughput 2020"].st
 tsa["Total Traveler Throughput 2020"] = tsa["Total Traveler Throughput 2020"].astype(float)
 tsa["Total Traveler Throughput 2019"] = tsa["Total Traveler Throughput 2019"].str.replace(',','')
 tsa["Total Traveler Throughput 2019"] = tsa["Total Traveler Throughput 2019"].astype(float)
+#reduce variance by using rolling mean for traveler numbers
+tsa['Average 2019'] = tsa.iloc[:,2].rolling(window=7).mean()
+tsa['Average 2020'] = tsa.iloc[:,1].rolling(window=7).mean()
 
 #prepare tsa file for merge with NYT data
 passenger_numbers_2020 = tsa.loc[:,["Date","Total Traveler Throughput 2020"]]
@@ -53,24 +56,30 @@ nyt_nationwide = tsa_numbered_nyt.loc[:,["Date","DateFormat","Total Cases"]]
 nyt_nationwide = nyt_nationwide.drop_duplicates()
 #Make a new column of rate of change in total cases using .diff
 nyt_nationwide["Case Rate of Change"]= nyt_nationwide["Total Cases"].diff()
+#reduce variance by using rolling mean for rate of change numbers
+nyt_nationwide['Averaged Rate of Change'] = nyt_nationwide.iloc[:,2].rolling(window=7).mean()
 
 #create a merged dataframe of tsa data and nationwide nyt data
 combined_total_data = pd.merge(numbered_tsa,nyt_nationwide, how="left",on="Date")
-correlation_total_data = combined_total_data.loc[:,["Total Traveler Throughput 2020","Total Cases"]]
+correlation_total_data = combined_total_data.loc[:,["Total Traveler Throughput 2020","Averaged Rate of Change"]]
 #prepare nyt case data to be compared at different time points against travel numbers to explore if the relationship between the two has lag
 for i in range(-30,31):
-    correlation_total_data[i]=correlation_total_data["Total Cases"].shift(i)
+    correlation_total_data[i]=correlation_total_data["Averaged Rate of Change"].shift(i)
 
 #make individual state dataframes for Georgia, California, Massachusetts, and Texas
 #also create Case rate of change columns for all states
 California = curated_nyt.loc[curated_nyt["state"]=="California"]
 California["Case Rate of Change"]= California["cases"].diff()
+California['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
 Georgia = curated_nyt.loc[curated_nyt["state"]=="Georgia"]
 Georgia["Case Rate of Change"]= Georgia["cases"].diff()
+Georgia['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
 Massachusetts = curated_nyt.loc[curated_nyt["state"]=="Massachusetts"]
 Massachusetts["Case Rate of Change"]= Massachusetts["cases"].diff()
+Massachusetts['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
 Texas = curated_nyt.loc[curated_nyt["state"]=="Texas"]
 Texas["Case Rate of Change"]= Texas["cases"].diff()
+Texas['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
 
 #load in airport data
 airport_data = "Resources/covid_impact_on_airport_traffic.csv"
@@ -95,11 +104,16 @@ curated_airport_data=curated_airport_data.sort_values(by=["Date"])
 
 #test airport df
 LAX = curated_airport_data.loc[curated_airport_data["AirportName"]=="Los Angeles International"]
+LAX['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
 #create rest of airport dfs
 SFO = curated_airport_data.loc[curated_airport_data["AirportName"]=="San Francisco International"]
+SFO['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
 BOS =  curated_airport_data.loc[curated_airport_data["State"]=="Massachusetts"]
+BOS['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
 ATL =  curated_airport_data.loc[curated_airport_data["State"]=="Georgia"]
+ATL['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
 DFW =  curated_airport_data.loc[curated_airport_data["State"]=="Texas"]
+DFW['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
 
 #test with 1 airport and city for combined data set
 LAXCA = pd.merge(California,LAX,how="inner",on="Date")
