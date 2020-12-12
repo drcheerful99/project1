@@ -70,16 +70,16 @@ for i in range(-30,31):
 #also create Case rate of change columns for all states
 California = curated_nyt.loc[curated_nyt["state"]=="California"]
 California["Case Rate of Change"]= California["cases"].diff()
-California['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
+California['Averaged Rate of Change'] = California.iloc[:,4].rolling(window=7).mean()
 Georgia = curated_nyt.loc[curated_nyt["state"]=="Georgia"]
 Georgia["Case Rate of Change"]= Georgia["cases"].diff()
-Georgia['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
+Georgia['Averaged Rate of Change'] = Georgia.iloc[:,4].rolling(window=7).mean()
 Massachusetts = curated_nyt.loc[curated_nyt["state"]=="Massachusetts"]
 Massachusetts["Case Rate of Change"]= Massachusetts["cases"].diff()
-Massachusetts['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
+Massachusetts['Averaged Rate of Change'] = Massachusetts.iloc[:,4].rolling(window=7).mean()
 Texas = curated_nyt.loc[curated_nyt["state"]=="Texas"]
 Texas["Case Rate of Change"]= Texas["cases"].diff()
-Texas['Averaged Rate of Change'] = nyt_nationwide.iloc[:,4].rolling(window=7).mean()
+Texas['Averaged Rate of Change'] = Texas.iloc[:,4].rolling(window=7).mean()
 
 #load in airport data
 airport_data = "Resources/covid_impact_on_airport_traffic.csv"
@@ -104,16 +104,16 @@ curated_airport_data=curated_airport_data.sort_values(by=["Date"])
 
 #test airport df
 LAX = curated_airport_data.loc[curated_airport_data["AirportName"]=="Los Angeles International"]
-LAX['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
+LAX['Averaged POB'] = LAX.iloc[:,3].rolling(window=7).mean()
 #create rest of airport dfs
 SFO = curated_airport_data.loc[curated_airport_data["AirportName"]=="San Francisco International"]
-SFO['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
+SFO['Averaged POB'] = SFO.iloc[:,3].rolling(window=7).mean()
 BOS =  curated_airport_data.loc[curated_airport_data["State"]=="Massachusetts"]
-BOS['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
+BOS['Averaged POB'] = BOS.iloc[:,3].rolling(window=7).mean()
 ATL =  curated_airport_data.loc[curated_airport_data["State"]=="Georgia"]
-ATL['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
+ATL['Averaged POB'] = ATL.iloc[:,3].rolling(window=7).mean()
 DFW =  curated_airport_data.loc[curated_airport_data["State"]=="Texas"]
-DFW['Averaged POB'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
+DFW['Averaged POB'] = DFW.iloc[:,3].rolling(window=7).mean()
 
 #test with 1 airport and city for combined data set
 LAXCA = pd.merge(California,LAX,how="inner",on="Date")
