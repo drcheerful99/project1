@@ -18,7 +18,7 @@ tsa['Average 2019'] = tsa.iloc[:,2].rolling(window=7).mean()
 tsa['Average 2020'] = tsa.iloc[:,1].rolling(window=7).mean()
 
 #prepare tsa file for merge with NYT data
-passenger_numbers_2020 = tsa.loc[:,["Date","Total Traveler Throughput 2020"]]
+passenger_numbers_2020 = tsa.loc[:,["Date","Average 2020"]]
 
 #change date to number string
 numbered_tsa = passenger_numbers_2020
@@ -57,11 +57,11 @@ nyt_nationwide = nyt_nationwide.drop_duplicates()
 #Make a new column of rate of change in total cases using .diff
 nyt_nationwide["Case Rate of Change"]= nyt_nationwide["Total Cases"].diff()
 #reduce variance by using rolling mean for rate of change numbers
-nyt_nationwide['Averaged Rate of Change'] = nyt_nationwide.iloc[:,2].rolling(window=7).mean()
+nyt_nationwide['Averaged Rate of Change'] = nyt_nationwide.iloc[:,3].rolling(window=7).mean()
 
 #create a merged dataframe of tsa data and nationwide nyt data
 combined_total_data = pd.merge(numbered_tsa,nyt_nationwide, how="left",on="Date")
-correlation_total_data = combined_total_data.loc[:,["Total Traveler Throughput 2020","Averaged Rate of Change"]]
+correlation_total_data = combined_total_data.loc[:,["Average 2020","Averaged Rate of Change"]]
 #prepare nyt case data to be compared at different time points against travel numbers to explore if the relationship between the two has lag
 for i in range(-30,31):
     correlation_total_data[i]=correlation_total_data["Averaged Rate of Change"].shift(i)
@@ -80,6 +80,29 @@ Massachusetts['Averaged Rate of Change'] = Massachusetts.iloc[:,4].rolling(windo
 Texas = curated_nyt.loc[curated_nyt["state"]=="Texas"]
 Texas["Case Rate of Change"]= Texas["cases"].diff()
 Texas['Averaged Rate of Change'] = Texas.iloc[:,4].rolling(window=7).mean()
+
+#rate of change in case numbers in states is not a good measurement as there are different population sizes and densities
+#balance this out with daily case rate of change and total cases proportionate to the population
+TX_population = 29087070
+CA_population = 39747267
+MA_population = 6976600
+GA_population = 10736100
+Texas["Case Percent"] = Texas["cases"].div(TX_population)
+Texas["Case Percent"] = round(Texas["Case Percent"].multiply(100),2)
+Texas["Percent Rate of Change"] = Texas["Averaged Rate of Change"].div(TX_population)
+Texas["Percent Rate of Change"] = round(Texas["Percent Rate of Change"].multiply(100),4)
+California["Case Percent"] = California["cases"].div(CA_population)
+California["Case Percent"] = round(California["Case Percent"].multiply(100),2)
+California["Percent Rate of Change"] = California["Averaged Rate of Change"].div(CA_population)
+California["Percent Rate of Change"] = round(California["Percent Rate of Change"].multiply(100),4)
+Massachusetts["Case Percent"] = Massachusetts["cases"].div(MA_population)
+Massachusetts["Case Percent"] = round(Massachusetts["Case Percent"].multiply(100),2)
+Massachusetts["Percent Rate of Change"] = Massachusetts["Averaged Rate of Change"].div(MA_population)
+Massachusetts["Percent Rate of Change"] = round(Massachusetts["Percent Rate of Change"].multiply(100),4)
+Georgia["Case Percent"] = Georgia["cases"].div(GA_population)
+Georgia["Case Percent"] = round(Georgia["Case Percent"].multiply(100),2)
+Georgia["Percent Rate of Change"] = Georgia["Averaged Rate of Change"].div(GA_population)
+Georgia["Percent Rate of Change"] = round(Georgia["Percent Rate of Change"].multiply(100),4)
 
 #load in airport data
 airport_data = "Resources/covid_impact_on_airport_traffic.csv"
